@@ -1,10 +1,14 @@
 #include <stdio.h>
 #include <inttypes.h>
+#include <stdlib.h>
+
+#define heap_size 100000
 
 int64_t entry();
 
 int main(int argc, char** argv) {
-	  int64_t result = entry();
+	  void* heap = malloc(heap_size);
+	  int64_t result = entry(heap_size);
 	    printf("%" PRId64 "\n", result);
 	      return 0;
 }

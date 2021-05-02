@@ -2,18 +2,30 @@
 
 (provide main)
 (require a86)
+(require "ast.rkt")
 
 
-;; For now, just returns a set program
-;; will map e to the assembly when I write it
+;; Exp -> a86
+(define (compileImpl e)
+  (match e
+    [(list 'const n)
+     (Push n)]
+    [(list 'plus e1 e2)
+     (seq
+      (compileImpl e1)
+      (compileImpl e2)
+      (Pop 'rax)
+      (Pop 'rbx)
+      (Add 'rax 'rbx)
+      (Push 'rax))]))
+
 
 ;; Exp -> a86
 (define (compile e)
   (seq
    (Label 'entry)
-   (Mov 'rax 10)
-   (Mov 'rbx 5)
-   (Add 'rax 'rbx)
+   (compileImpl (desugar e))
+   (Pop 'rax)
    (Ret)))
 
 
@@ -35,3 +47,8 @@
   (system "rm tmp.tmp")
   (system (string-append "gcc ../build/main.o ./tmp.tmp.o -o " outfilename))
   (system "rm tmp.tmp.o"))
+
+(define (compile-test filename)
+   (define input (read-file filename))
+  (define a86asm (compile input))
+  a86asm)
