@@ -7,6 +7,7 @@
 (define scratch-reg-1 'rcx)
 (define scratch-reg-2 'rdx)
 (define scratch-reg-3 'rdi)
+(define return-reg 'r8)
 ;; (struct Variable () #:transparent)
 
 (define int-mask 1)

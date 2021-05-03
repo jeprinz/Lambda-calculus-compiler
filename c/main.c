@@ -13,7 +13,7 @@ void error() {
 
 int main(int argc, char** argv) {
 	  void* heap = malloc(heap_size);
-	  int64_t result = entry(heap_size);
+	  int64_t result = entry(heap);
 	    printf("%" PRId64 "\n", result);
 	      return 0;
 }

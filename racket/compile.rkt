@@ -45,7 +45,8 @@
       (Push scratch-reg-1))]
     [(Cclosure label) ;; create closure (label, current data) in heap, push pointer to closure onto stack
      (seq
-      (Mov (Offset heap-reg 0) label)
+      (Lea scratch-reg-1 label)
+      (Mov (Offset heap-reg 0) scratch-reg-1)
       (Mov (Offset heap-reg 8) scope-reg)
       (Push heap-reg)
       (Add heap-reg 16))]
@@ -58,7 +59,7 @@
         (Label lstart) ;; while scratch-reg-1 != i
         (Cmp scratch-reg-1 i)
         (Je lend)
-        (Mov (scratch-reg-2) (Offset scratch-reg-2 0)) ;; get next scope pointer from scope
+        (Mov scratch-reg-2 (Offset scratch-reg-2 0)) ;; get next scope pointer from scope
         (Add scratch-reg-1 1) ;; scratch-reg-1++;
         (Jmp lstart) ;; end of loop
         (Label lend)
@@ -69,8 +70,8 @@
      (seq
       (compileExpr c1) ;; Run c1, it's result is on stack
       (compileExpr c2) ;; Run c2, it's result is on stack
-      (Pop c1 scratch-reg-1) ;; scratch-reg-1 holds closure = ptr to 16 byte {function ptr, scope ptr}
-      (Pop c2 scratch-reg-2) ;; scratch-reg-2 holds argument
+      (Pop scratch-reg-2) ;; scratch-reg-2 holds argument
+      (Pop scratch-reg-1) ;; scratch-reg-1 holds closure = ptr to 16 byte {function ptr, scope ptr}
       (check-closure scratch-reg-1) ;; check that it really is a function, and not an integer
       ;; Next, we build that Scope object for the function. It should be the scope object in
       ;; the closure pointed to by c1, along with our argument, c2
@@ -82,9 +83,8 @@
       (Mov scope-reg heap-reg) ;; put ptr to new full scope for function being called
       (Add heap-reg 16) ;; increment heap pointer to next available location
       (Call scratch-reg-3) ;; call the function
-      (Pop scratch-reg-1) ;; get the result
       (Pop scope-reg) ;; get our scope back
-      (Push scratch-reg-1) ;; put the result back on the stack
+      (Push return-reg) ;; put the result back on the stack
       )]))
 
 (define (compileImpl es)
@@ -92,11 +92,12 @@
     [(Code body defs)
      (seq
       (compileExpr body)
+      (Jmp 'end)
       (apply append
              (map (lambda (def)
                     (match def
                       [(cons label body)
-                       (seq (Label label) (compileExpr body))])) defs)))]))
+                       (seq (Label label) (compileExpr body) (Pop return-reg) (Ret))])) defs)))]))
 
 ;; Exp -> a86
 (define (compile es)
@@ -105,13 +106,14 @@
    (Label 'entry)
    (Mov heap-reg 'rdi) ;; get heap ptr from main.c
    (compileImpl (delambda (desugar es)))
+   (Label 'end)
    (Pop 'rax)
    (check-number 'rax)
    (Sar 'rax 1)
    (Ret)
    (Label 'raiseError)
    (Call 'error) ;; error from main.c
-   (Ret)))
+   ))
 
 
 ;;inputs filename, outputs s-expression contained in file
