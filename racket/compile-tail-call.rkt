@@ -27,49 +27,25 @@
 (define (compileExprTailCall e)
   (match e
     [(Icall c1 c2)
-     (let [(code-to-get-arg-in-scratch-reg-2
-            (match c2
-              [(Ivar i)
-               (let ((lstart (gensym))
-                     (lend (gensym)))
-                 (seq ;; This sequence gets the variable value into scratch-reg-2
-                  (Mov scratch-reg-1 0) ;; let scratch-reg-1 = 0
-                  (Mov scratch-reg-2 scope-reg) ;; let scope = scope-reg
-                  (Label lstart) ;; while scratch-reg-1 != i
-                  (Cmp scratch-reg-1 i)
-                  (Je lend)
-                  (Mov scratch-reg-2 (Offset scratch-reg-2 0)) ;; get next scope pointer from scope
-                  (Add scratch-reg-1 1) ;; scratch-reg-1++;
-                  (Jmp lstart) ;; end of loop
-                  (Label lend)
-                  (Mov scratch-reg-2 (Offset scratch-reg-2 8)))) ;; get value from scope
-               ]
-              [(Iconst n)
-               (Mov scratch-reg-2 (+ (* n 2) int-mask))]
-            ;  [(Iclosure label)
-            ;   "something"]
-              [else #f]))]
-       (if code-to-get-arg-in-scratch-reg-2
-           (seq
-            (compileExprGeneral c1) ;; Run c1, it's result is on stack
-        
-            ; code-to-get-arg-in-scratch-reg-2
-            (compileExprGeneral c2)
-            (Pop scratch-reg-2)
-        
-            (Pop scratch-reg-1) ;; scratch-reg-1 holds closure = ptr to 16 byte {function ptr, scope ptr}
-            (check-closure scratch-reg-1) ;; check that it really is a function, and not an integer
-            ;; Next, we build that Scope object for the function. It should be the scope object in
-            ;; the closure pointed to by c1, along with our argument, c2
-            (Mov scratch-reg-3 (Offset scratch-reg-1 8)) ;; get scope from closure
-            (Mov (Offset heap-reg 0) scratch-reg-3) ;; first word of full scope is ptr to rest of scope
-            (Mov (Offset heap-reg 8) scratch-reg-2) ;; second word is the argument
-            (Mov scratch-reg-3 (Offset scratch-reg-1 0)) ;; get the function pointer to be called
-            (Mov scope-reg heap-reg) ;; put ptr to new full scope for function being called
-            (Add heap-reg 16) ;; increment heap pointer to next available location
-            (Jmp scratch-reg-3) ;; jump to the function
-            )
-           #f))]
+     (seq
+      (compileExprGeneral c1) ;; Run c1, it's result is on stack
+          
+      ; code-to-get-arg-in-scratch-reg-2
+      (compileExprGeneral c2)
+      (Pop scratch-reg-2)
+          
+      (Pop scratch-reg-1) ;; scratch-reg-1 holds closure = ptr to 16 byte {function ptr, scope ptr}
+      (check-closure scratch-reg-1) ;; check that it really is a function, and not an integer
+      ;; Next, we build that Scope object for the function. It should be the scope object in
+      ;; the closure pointed to by c1, along with our argument, c2
+      (Mov scratch-reg-3 (Offset scratch-reg-1 8)) ;; get scope from closure
+      (Mov (Offset heap-reg 0) scratch-reg-3) ;; first word of full scope is ptr to rest of scope
+      (Mov (Offset heap-reg 8) scratch-reg-2) ;; second word is the argument
+      (Mov scratch-reg-3 (Offset scratch-reg-1 0)) ;; get the function pointer to be called
+      (Mov scope-reg heap-reg) ;; put ptr to new full scope for function being called
+      (Add heap-reg 16) ;; increment heap pointer to next available location
+      (Jmp scratch-reg-3) ;; jump to the function
+      )]
     [else #f]))
 
 ;; Compiles single function
