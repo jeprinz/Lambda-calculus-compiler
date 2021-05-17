@@ -1,7 +1,7 @@
 #lang racket
 
 (provide desugar delambda Elam Eapp Evar Econst Eplus
-         Code Cvar Cconst Ccall Cclosure Cplus)
+         IntExp Ivar Iconst Icall Iclosure Iplus)
 
 ;; Definition of type Exp
 (struct Elam (e) #:transparent)
@@ -50,38 +50,38 @@
        (raise e)]))
   (desugarImpl e null))
 
-;; A Third type, Code, which is a List (Label, Exp')
+;; An intermediate language, IntExp, which is a List (Label, Exp')
 ;; Exp'
 
 ;; Exp'
-(struct Ccall (c1 c2) #:transparent) ;; represents calling a closure with an argument
-(struct Cclosure (label) #:transparent) ;; represents creation of a function with access to local scope
-(struct Cplus (e1 e2) #:transparent) ;; addition
-(struct Cconst (n) #:transparent)
-(struct Cvar (x) #:transparent)
+(struct Icall (c1 c2) #:transparent) ;; represents calling a closure with an argument
+(struct Iclosure (label) #:transparent) ;; represents creation of a function with access to local scope
+(struct Iplus (e1 e2) #:transparent) ;; addition
+(struct Iconst (n) #:transparent)
+(struct Ivar (x) #:transparent)
 
-(struct Code (main functions) #:transparent)
+(struct IntExp (main functions) #:transparent)
 
-;; Exp -> Code (Exp' , List (Label, Exp'))
+;; Exp -> intExp (Exp' , List (Label, Exp'))
 (define (delambda e)
   (match e
     [(Elam e)
      (let* [(l (gensym))
             (res (delambda e))]
-       (Code (Cclosure l)
-             (append (list (cons l (Code-main res))) (Code-functions res))))]
+       (IntExp (Iclosure l)
+             (append (list (cons l (IntExp-main res))) (IntExp-functions res))))]
     [(Eapp e1 e2)
      (let* [(res1 (delambda e1))
             (res2 (delambda e2))]
-       (Code (Ccall (Code-main res1) (Code-main res2))
-             (append (Code-functions res1) (Code-functions res2))))]
-    [(Evar x) (Code (Cvar x) '())]
-    [(Econst n) (Code (Cconst n) '())]
+       (IntExp (Icall (IntExp-main res1) (IntExp-main res2))
+             (append (IntExp-functions res1) (IntExp-functions res2))))]
+    [(Evar x) (IntExp (Ivar x) '())]
+    [(Econst n) (IntExp (Iconst n) '())]
     [(Eplus e1 e2)
      (let* [(res1 (delambda e1))
             (res2 (delambda e2))]
-       (Code (Cplus (Code-main res1) (Code-main res2))
-             (append (Code-functions res1) (Code-functions res2))))]))
+       (IntExp (Iplus (IntExp-main res1) (IntExp-main res2))
+             (append (IntExp-functions res1) (IntExp-functions res2))))]))
 
 
        
