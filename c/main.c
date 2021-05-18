@@ -2,7 +2,7 @@
 #include <inttypes.h>
 #include <stdlib.h>
 
-#define heap_size 100000
+#define heap_size 1000000000 // 1 GB
 
 int64_t entry();
 
