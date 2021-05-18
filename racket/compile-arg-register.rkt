@@ -55,7 +55,7 @@
       (Mov (Offset heap-reg 8) arg-reg)
       ;; Create closure object
       (Mov (Offset heap-reg 16) scratch-reg-1)
-      (Mov (Offset heap-reg 24) scope-reg)
+      (Mov (Offset heap-reg 24) heap-reg)
       (Add heap-reg 16)
       (Push heap-reg)
       (Add heap-reg 16))]
