@@ -12,5 +12,5 @@ First run ./compiler-the-compiler, which will compile main.c
 Then, to compile a file, open compile*.rkt in drracket, and run e.g.
 
 ```
-(main "../test-lang-src/proj2.jacob" "../prog2.out")
+(main "../test-lang-src/prog2.jacob" "../prog2.out")
 ```
