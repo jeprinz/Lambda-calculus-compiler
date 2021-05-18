@@ -1,0 +1,13 @@
+((lam
+   (n m)
+   (m
+    ((lam (n m f x) (n (m f) x)) n)
+    (lam (f x) (f x))))
+  (lam (f x) (f (f (f x))))
+  (lam
+   (f x)
+   (f
+    (f
+     (f (f (f (f (f (f (f (f (f (f (f x))))))))))))))
+  (lam x (+ x 1))
+  0)

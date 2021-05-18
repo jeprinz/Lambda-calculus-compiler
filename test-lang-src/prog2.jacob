@@ -1,0 +1,37 @@
+((lam
+   (m n)
+   (n
+    (lam
+     n
+     (n
+      (lam
+       p
+       (p
+        (lam (x y) y)
+        ((lam (x y) (lam f (f x y)))
+         (lam (f x) x)
+         (lam (x y) y))
+        ((lam (x y) (lam f (f x y)))
+         ((lam (n m f x) (n f (m f x)))
+          (p (lam (x y) x))
+          (lam (f x) (f x)))
+         (lam (x y) y))))
+      ((lam (x y) (lam f (f x y))) 0 (lam (x y) x))
+      (lam (x y) x)))
+    m))
+  ((lam
+    (n m)
+    (m
+     ((lam (n m f x) (n (m f) x)) n)
+     (lam (f x) (f x))))
+   (lam (f x) (f (f (f (f x)))))
+   (lam (f x) (f (f (f (f (f x)))))))
+  ((lam
+    (n m)
+    (m
+     ((lam (n m f x) (n (m f) x)) n)
+     (lam (f x) (f x))))
+   (lam (f x) (f (f (f x))))
+   (lam (f x) (f (f (f (f (f x)))))))
+  (lam x (+ x 1))
+  0)
