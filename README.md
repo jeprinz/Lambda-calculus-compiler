@@ -5,6 +5,7 @@
 * racket/asm.rkt - code parsing and intermediate representations
 * racket/compiler.rkt - compiler without any optimizations
 * racket/compiler-* - compiler with some optimization depending on*
+* racket/lambda-calculus-utils.rkt - not part of the compiler, but contains code I used to generate programs for testing
 
 ## How to use:
 First run ./compiler-the-compiler, which will compile main.c
